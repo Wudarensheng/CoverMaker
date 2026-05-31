@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>封面制作器</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="app">
+        <header class="header">
+            <div class="logo">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                <span>封面制作器</span>
+            </div>
+            <div class="header-center">
+                <div class="size-selector">
+                    <select id="canvasSize">
+                        <option value="1280x720">16:9 (1280×720)</option>
+                        <option value="1920x1080">16:9 (1920×1080)</option>
+                        <option value="1080x1080">1:1 (1080×1080)</option>
+                        <option value="1080x1920">9:16 (1080×1920)</option>
+                    </select>
+                    <span class="size-display" id="sizeDisplay">1280 × 720</span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="header-btn" id="undoBtn" title="撤销">↩</button>
+                <button class="header-btn" id="redoBtn" title="重做">↪</button>
+                <div class="divider"></div>
+                <button class="header-btn primary" id="exportBtn">导出</button>
+            </div>
+        </header>
+        
+        <div class="body">
+            <div class="left-panel">
+                <div class="section">
+                    <div class="section-title">添加元素</div>
+                    <div class="add-buttons">
+                        <div class="add-btn" id="addTextBtn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7V4h16v3M9 20h6M12 4v16"/></svg>
+                            <span>文字</span>
+                        </div>
+                        <div class="add-btn" id="addShapeBtn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+                            <span>形状</span>
+                        </div>
+                        <div class="add-btn full" id="addImageBtn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                            <span>上传图片</span>
+                            <input type="file" id="imageInput" accept="image/*" multiple hidden>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <div class="section-title">视频截帧</div>
+                    <div class="upload-area" id="videoUpload">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+                        <span>上传视频</span>
+                        <input type="file" id="videoInput" accept="video/*" hidden>
+                    </div>
+                    <div class="hidden" id="videoPreview">
+                        <video id="videoPlayer" class="video-player" preload="metadata"></video>
+                        <div id="timeline" class="timeline"></div>
+                        <div class="time-controls">
+                            <span id="timeDisplay" class="time-display">00:00</span>
+                            <input type="range" id="timeSlider" min="0" max="100" value="0" step="0.1">
+                            <button class="btn btn-sm" id="captureBtn">截取</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <div class="section-title">图层</div>
+                    <div class="layer-list" id="layerList"></div>
+                </div>
+                
+                <div class="section">
+                    <div class="section-title">背景</div>
+                    <div class="bg-controls">
+                        <div class="color-row">
+                            <div class="color-preview" id="bgColorPreview" style="background:#1a1a2e"></div>
+                            <input type="color" id="bgColor" value="#1a1a2e">
+                            <span class="color-value" id="bgColorValue">#1a1a2e</span>
+                        </div>
+                        <div class="slider-row">
+                            <label>透明度</label>
+                            <input type="range" id="bgOpacity" min="0" max="100" value="100">
+                            <span id="bgOpacityVal">100%</span>
+                        </div>
+                        <div class="upload-area" id="bgImageUpload" style="padding:12px;margin-bottom:8px">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                            <span>上传背景图</span>
+                            <input type="file" id="bgImageInput" accept="image/*" hidden>
+                        </div>
+                        <div class="hidden" id="bgImageControls">
+                            <div class="slider-row">
+                                <label>图片透明度</label>
+                                <input type="range" id="bgImageOpacity" min="0" max="100" value="100">
+                                <span id="bgImageOpacityVal">100%</span>
+                            </div>
+                            <div class="slider-row">
+                                <label>填充方式</label>
+                                <select id="bgImageFit" style="flex:1;padding:4px;background:#0a0a14;border:1px solid #2a2a3a;color:#e8e8f0;border-radius:4px">
+                                    <option value="cover">填充</option>
+                                    <option value="contain">适应</option>
+                                    <option value="stretch">拉伸</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-sm" id="removeBgImage" style="background:#e94560;border-color:#e94560;margin-top:4px">移除背景图</button>
+                        </div>
+                        <div class="gradient-grid">
+                            <div class="gradient-btn" data-colors="#667eea,#764ba2" style="background:linear-gradient(135deg,#667eea,#764ba2)"></div>
+                            <div class="gradient-btn" data-colors="#f093fb,#f5576c" style="background:linear-gradient(135deg,#f093fb,#f5576c)"></div>
+                            <div class="gradient-btn" data-colors="#4facfe,#00f2fe" style="background:linear-gradient(135deg,#4facfe,#00f2fe)"></div>
+                            <div class="gradient-btn" data-colors="#43e97b,#38f9d7" style="background:linear-gradient(135deg,#43e97b,#38f9d7)"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="center-area">
+                <div class="canvas-area">
+                    <canvas id="mainCanvas" width="1280" height="720"></canvas>
+                </div>
+                <div class="canvas-footer">
+                    <span id="cursorPos">0, 0</span>
+                    <span id="selectedInfo">未选中</span>
+                </div>
+            </div>
+            
+            <div class="right-panel">
+                <div id="emptyState">
+                    <div class="empty-state">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                        <p>选择元素进行编辑</p>
+                        <span>或从左侧面板添加新元素</span>
+                    </div>
+                </div>
+                
+                <div class="hidden" id="propertiesPanel">
+                    <div class="prop-group">
+                        <div class="prop-label">位置与大小</div>
+                        <div class="prop-grid">
+                            <div class="prop-item"><label>X</label><input type="number" id="propX"></div>
+                            <div class="prop-item"><label>Y</label><input type="number" id="propY"></div>
+                            <div class="prop-item"><label>宽</label><input type="number" id="propW"></div>
+                            <div class="prop-item"><label>高</label><input type="number" id="propH"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="prop-group">
+                        <div class="prop-label">旋转</div>
+                        <div class="slider-row">
+                            <input type="range" id="propRotation" min="-180" max="180" value="0">
+                            <span id="rotationVal">0°</span>
+                        </div>
+                        <div class="rotation-presets">
+                            <button class="preset-btn" data-rot="-90">-90°</button>
+                            <button class="preset-btn" data-rot="0">0°</button>
+                            <button class="preset-btn" data-rot="90">90°</button>
+                            <button class="preset-btn" data-rot="180">180°</button>
+                        </div>
+                    </div>
+                    
+                    <div class="prop-group">
+                        <div class="prop-label">不透明度</div>
+                        <div class="slider-row">
+                            <input type="range" id="propOpacity" min="0" max="100" value="100">
+                            <span id="opacityVal">100%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="hidden" id="textProps">
+                        <div class="prop-group">
+                            <div class="prop-label">文字</div>
+                            <div class="prop-row"><textarea id="propText" placeholder="输入文字..."></textarea></div>
+                            <div class="prop-row"><select id="propFont"></select></div>
+                            <div class="prop-grid">
+                                <div class="prop-item"><label>大小</label><input type="number" id="propFontSize" value="48"></div>
+                                <div class="prop-item"><label>颜色</label><input type="color" id="propColor" value="#ffffff"></div>
+                            </div>
+                            <div class="style-btns">
+                                <button class="style-btn" id="boldBtn"><b>B</b></button>
+                                <button class="style-btn" id="italicBtn"><i>I</i></button>
+                                <button class="style-btn" id="underlineBtn"><u>U</u></button>
+                            </div>
+                            <div class="align-btns">
+                                <button class="align-btn active" data-align="left">≡</button>
+                                <button class="align-btn" data-align="center">≡</button>
+                                <button class="align-btn" data-align="right">≡</button>
+                            </div>
+                            <div class="checkbox-row"><input type="checkbox" id="propShadow" checked><label for="propShadow">文字阴影</label></div>
+                            <button class="btn primary" id="applyTextBtn">应用文字</button>
+                        </div>
+                    </div>
+                    
+                    <div class="hidden" id="shapeProps">
+                        <div class="prop-group">
+                            <div class="prop-label">形状</div>
+                            <div class="shape-grid">
+                                <button class="shape-btn active" data-shape="rect">▬</button>
+                                <button class="shape-btn" data-shape="circle">●</button>
+                                <button class="shape-btn" data-shape="triangle">▲</button>
+                                <button class="shape-btn" data-shape="star">★</button>
+                            </div>
+                            <div class="prop-grid">
+                                <div class="prop-item"><label>填充</label><input type="color" id="shapeFill" value="#e94560"></div>
+                                <div class="prop-item"><label>边框</label><input type="color" id="shapeStroke" value="#ffffff"></div>
+                            </div>
+                            <div class="slider-row">
+                                <label>边框</label>
+                                <input type="range" id="shapeStrokeWidth" min="0" max="20" value="2">
+                                <span id="strokeWidthVal">2px</span>
+                            </div>
+                            <button class="btn primary" id="addShapeConfirm">添加形状</button>
+                        </div>
+                    </div>
+                    
+                    <button class="btn danger" id="deleteBtn">删除元素</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="js/app.js"></script>
+</body>
+</html>
